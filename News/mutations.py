@@ -36,6 +36,7 @@ class AddNews(graphene.Mutation):
             defaults={"text": text, "breaking": breaking, "image": file}, title=title
         )
         if created:
-            BreakingNewsSubscription.deliver_news(news_title=title, news_id=news.id)
+            if news.breaking:
+                BreakingNewsSubscription.deliver_news(news_title=title, news_id=news.id)
             return {"message": "News added", "success": True}
         return {"message": "News already exists", "success": False}
