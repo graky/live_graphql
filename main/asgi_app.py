@@ -24,6 +24,7 @@ def demo_middleware(next_middleware, root, info, *args, **kwds):
 
 class MyGraphqlWsConsumer(channels_graphql_ws.GraphqlWsConsumer):
     """Channels WebSocket consumer which provides GraphQL API."""
+
     schema = schema
 
     middleware = [demo_middleware]

@@ -31,13 +31,11 @@ class AddNews(graphene.Mutation):
             path = directory + "/{}/{}/{}/".format(
                 datetime.now().year, datetime.now().month, datetime.now().day
             )
-            default_storage.save(
-                path + file.name, ContentFile(file.read())
-            )
-        news, created = News.objects.get_or_create(defaults={"text": text, "breaking": breaking, "image": file}, title=title)
+            default_storage.save(path + file.name, ContentFile(file.read()))
+        news, created = News.objects.get_or_create(
+            defaults={"text": text, "breaking": breaking, "image": file}, title=title
+        )
         if created:
             BreakingNewsSubscription.deliver_news(news_title=title, news_id=news.id)
             return {"message": "News added", "success": True}
         return {"message": "News already exists", "success": False}
-
-

@@ -20,11 +20,12 @@ from django.conf.urls.static import static
 from graphql_jwt.decorators import jwt_cookie
 from graphene_django.views import GraphQLView
 from graphene_file_upload.django import FileUploadGraphQLView
-urlpatterns = ([
-    path('admin/', admin.site.urls),
-    path("try/", jwt_cookie(FileUploadGraphQLView.as_view(graphiql=True))),
+
+urlpatterns = (
+    [
+        path("admin/", admin.site.urls),
+        path("try/", jwt_cookie(FileUploadGraphQLView.as_view(graphiql=True))),
     ]
     + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
 )

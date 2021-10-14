@@ -9,23 +9,51 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='News',
+            name="News",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=255, unique=True, verbose_name='заголовок новости')),
-                ('text', ckeditor.fields.RichTextField(verbose_name='Содержание новости')),
-                ('image', models.FileField(help_text='Изображение для новости', null=True, upload_to='awards/%Y/%m/%d/', verbose_name='Файл')),
-                ('created_at', models.DateTimeField(default=django.utils.timezone.now, verbose_name='Создан')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "title",
+                    models.CharField(
+                        max_length=255, unique=True, verbose_name="заголовок новости"
+                    ),
+                ),
+                (
+                    "text",
+                    ckeditor.fields.RichTextField(verbose_name="Содержание новости"),
+                ),
+                (
+                    "image",
+                    models.FileField(
+                        help_text="Изображение для новости",
+                        null=True,
+                        upload_to="awards/%Y/%m/%d/",
+                        verbose_name="Файл",
+                    ),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(
+                        default=django.utils.timezone.now, verbose_name="Создан"
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Новость',
-                'verbose_name_plural': 'Новости',
-                'ordering': ['-created_at'],
+                "verbose_name": "Новость",
+                "verbose_name_plural": "Новости",
+                "ordering": ["-created_at"],
             },
         ),
     ]

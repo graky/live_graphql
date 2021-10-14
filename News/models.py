@@ -16,7 +16,8 @@ class News(models.Model):
         null=True,
         upload_to="news/%Y/%m/%d/",
         verbose_name="Файл",
-        help_text="Изображение для новости",)
+        help_text="Изображение для новости",
+    )
     breaking = models.BooleanField(verbose_name="Срочная новость", default=False)
     created_at = models.DateTimeField(default=timezone.now, verbose_name="Создан")
 
@@ -37,5 +38,3 @@ class News(models.Model):
 
     def __str__(self):
         return self.title
-
-

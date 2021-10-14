@@ -16,6 +16,7 @@ class NewsType(DjangoObjectType):
     class Meta:
         model = News
 
+
 class NewsQuery(graphene.ObjectType):
     news_one = graphene.Field(NewsType, id=graphene.Int())
     news = graphene.List(NewsType)

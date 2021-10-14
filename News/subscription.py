@@ -17,7 +17,8 @@ class BreakingNewsSubscription(channels_graphql_ws.Subscription):
         news_title = self["news_title"]
 
         return BreakingNewsSubscription(
-            news_id=news_id, news_title=news_title,
+            news_id=news_id,
+            news_title=news_title,
         )
 
     @classmethod

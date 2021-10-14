@@ -13,4 +13,6 @@ class Subscription(graphene.ObjectType):
     on_new_chat_message = BreakingNewsSubscription.Field()
 
 
-schema = graphene.Schema(query=Query, mutation=Mutation, subscription=Subscription, auto_camelcase=False)
+schema = graphene.Schema(
+    query=Query, mutation=Mutation, subscription=Subscription, auto_camelcase=False
+)

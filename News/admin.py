@@ -8,15 +8,9 @@ class NewsAdmin(admin.ModelAdmin):
     fieldsets = [
         (
             "Основные параметры",
-            {
-                "fields": [
-                    "created_at",
-                    "title",
-                    "breaking"
-                ]
-            },
+            {"fields": ["created_at", "title", "breaking"]},
         ),
-        ("Изображение", {"fields": [("image", )]}),
+        ("Изображение", {"fields": [("image",)]}),
         ("Содержание", {"fields": ["text"]}),
     ]
     list_display = ["id", "title", "created_at", "breaking"]
