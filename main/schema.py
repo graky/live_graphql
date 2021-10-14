@@ -10,7 +10,7 @@ class Query(NewsQuery, graphene.ObjectType):
 
 class Subscription(graphene.ObjectType):
 
-    on_new_chat_message = BreakingNewsSubscription.Field()
+    breaking_news = BreakingNewsSubscription.Field()
 
 
 schema = graphene.Schema(

@@ -23,6 +23,6 @@ class BreakingNewsSubscription(channels_graphql_ws.Subscription):
 
     @classmethod
     def deliver_news(cls, news_title, news_id):
-        cls.broadcast(
+         cls.broadcast(
             payload={"news_title": news_title, "news_id": news_id},
         )
