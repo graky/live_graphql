@@ -38,4 +38,3 @@ class NewsQuery(graphene.ObjectType):
         news_id = kwargs.get("news_id")
         news_object = News.objects.get(pk=news_id)
         return Comments.objects.filter(news=news_object)
-

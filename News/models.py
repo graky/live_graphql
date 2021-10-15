@@ -4,6 +4,7 @@ from django.utils.html import format_html
 from ckeditor.fields import RichTextField
 from django.contrib.auth.models import User
 
+
 class News(models.Model):
     """Новости"""
 
@@ -44,7 +45,8 @@ class Comments(models.Model):
     """Комментарии пользователей к новостям"""
 
     text = RichTextField(verbose_name="Содержание комментария")
-    user = models.ForeignKey(User,
+    user = models.ForeignKey(
+        User,
         on_delete=models.CASCADE,
         verbose_name="Пользователь",
         related_name="users",

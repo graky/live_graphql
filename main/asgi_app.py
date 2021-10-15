@@ -13,7 +13,12 @@ class MyGraphqlWsConsumer(channels_graphql_ws.GraphqlWsConsumer):
     schema = schema
 
 
-application = channels.routing.ProtocolTypeRouter({
-    "websocket": channels.routing.URLRouter([re_path(r"wsgraphql", MyGraphqlWsConsumer.as_asgi()),
-    ])
-})
+application = channels.routing.ProtocolTypeRouter(
+    {
+        "websocket": channels.routing.URLRouter(
+            [
+                re_path(r"wsgraphql", MyGraphqlWsConsumer.as_asgi()),
+            ]
+        )
+    }
+)

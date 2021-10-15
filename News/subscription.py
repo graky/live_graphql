@@ -23,7 +23,7 @@ class BreakingNewsSubscription(channels_graphql_ws.Subscription):
 
     @classmethod
     def deliver_news(cls, news_title, news_id):
-         cls.broadcast(
+        cls.broadcast(
             payload={"news_title": news_title, "news_id": news_id},
         )
 
@@ -55,7 +55,7 @@ class CommentOnNewsSubscribe(channels_graphql_ws.Subscription):
 
     @classmethod
     def comment_notify(cls, news_id, username, text):
-         cls.broadcast(
-             group=news_id,
+        cls.broadcast(
+            group=news_id,
             payload={"username": username, "text": text},
         )
