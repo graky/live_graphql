@@ -52,6 +52,6 @@ class Comments(models.Model):
         related_name="users",
     )
     news = models.ForeignKey(
-        News, on_delete=models.CASCADE, verbose_name="Новость", related_name="news"
+        News, on_delete=models.CASCADE, verbose_name="Новость", related_name="comments"
     )
     created_at = models.DateTimeField(default=timezone.now, verbose_name="Создан")

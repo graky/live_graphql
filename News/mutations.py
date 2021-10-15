@@ -22,24 +22,30 @@ class AddNews(graphene.Mutation):
         image = Upload()
 
     def mutate(self, info, **kwargs):
-        title = kwargs.get("title")
-        text = kwargs.get("text")
-        breaking = kwargs.get("breaking", False)
-        file = kwargs.get("image")
-        if file:
-            directory = "news"
-            path = directory + "/{}/{}/{}/".format(
-                datetime.now().year, datetime.now().month, datetime.now().day
+        user = info.context.user
+        if user.is_staff:
+            title = kwargs.get("title")
+            text = kwargs.get("text")
+            breaking = kwargs.get("breaking", False)
+            file = kwargs.get("image")
+            if file:
+                directory = "news"
+                path = directory + "/{}/{}/{}/".format(
+                    datetime.now().year, datetime.now().month, datetime.now().day
+                )
+                default_storage.save(path + file.name, ContentFile(file.read()))
+            news, created = News.objects.get_or_create(
+                defaults={"text": text, "breaking": breaking, "image": file},
+                title=title,
             )
-            default_storage.save(path + file.name, ContentFile(file.read()))
-        news, created = News.objects.get_or_create(
-            defaults={"text": text, "breaking": breaking, "image": file}, title=title
-        )
-        if created:
-            if news.breaking:
-                BreakingNewsSubscription.deliver_news(news_title=title, news_id=news.id)
-            return {"message": "News added", "success": True}
-        return {"message": "News already exists", "success": False}
+            if created:
+                if news.breaking:
+                    BreakingNewsSubscription.deliver_news(
+                        news_title=title, news_id=news.id
+                    )
+                return {"message": "News added", "success": True}
+            return {"message": "News already exists", "success": False}
+        return {"message": "User not staff", "success": False}
 
 
 class AddComment(graphene.Mutation):
