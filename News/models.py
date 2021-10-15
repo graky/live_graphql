@@ -2,7 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.html import format_html
 from ckeditor.fields import RichTextField
-
+from django.contrib.auth.models import User
 
 class News(models.Model):
     """Новости"""
@@ -38,3 +38,18 @@ class News(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Comments(models.Model):
+    """Комментарии пользователей к новостям"""
+
+    text = RichTextField(verbose_name="Содержание комментария")
+    user = models.ForeignKey(User,
+        on_delete=models.CASCADE,
+        verbose_name="Пользователь",
+        related_name="users",
+    )
+    news = models.ForeignKey(
+        News, on_delete=models.CASCADE, verbose_name="Новость", related_name="news"
+    )
+    created_at = models.DateTimeField(default=timezone.now, verbose_name="Создан")
