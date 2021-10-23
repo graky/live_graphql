@@ -7,6 +7,7 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from .models import News, Comments
 from .subscription import BreakingNewsSubscription, CommentOnNewsSubscribe
+from django.conf import settings
 
 
 class AddNews(graphene.Mutation):
@@ -22,8 +23,11 @@ class AddNews(graphene.Mutation):
         image = Upload()
 
     def mutate(self, info, **kwargs):
-        user = info.context.user
-        if user.is_staff:
+        if settings.DEBUG:
+            user_staff = True
+        else:
+            user_staff = info.context.user.is_staff
+        if user_staff:
             title = kwargs.get("title")
             text = kwargs.get("text")
             breaking = kwargs.get("breaking", False)
