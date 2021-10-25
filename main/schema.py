@@ -1,18 +1,17 @@
 import graphene
 from .mutations import Mutation
-from News.subscription import BreakingNewsSubscription, CommentOnNewsSubscribe
+from News.subscription import NewsSubscription
 from News.schema import NewsQuery
 from User.schema import UserQuery
+from channels.layers import get_channel_layer
 
 
 class Query(NewsQuery, UserQuery, graphene.ObjectType):
     ...
 
 
-class Subscription(graphene.ObjectType):
-
-    breaking_news = BreakingNewsSubscription.Field()
-    comment_subscription = CommentOnNewsSubscribe.Field()
+class Subscription(NewsSubscription, graphene.ObjectType):
+    ...
 
 
 schema = graphene.Schema(

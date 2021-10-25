@@ -3,11 +3,12 @@ from graphene_file_upload.scalars import Upload
 from datetime import datetime
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
+from .models import News, Comments
+from django.conf import settings
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
-from .models import News, Comments
-from .subscription import BreakingNewsSubscription, CommentOnNewsSubscribe
-from django.conf import settings
+
+channel_layer = get_channel_layer()
 
 
 class AddNews(graphene.Mutation):
@@ -44,8 +45,9 @@ class AddNews(graphene.Mutation):
             )
             if created:
                 if news.breaking:
-                    BreakingNewsSubscription.deliver_news(
-                        news_title=title, news_id=news.id
+                    async_to_sync(channel_layer.group_send)(
+                        "breaking_news",
+                        {"data": {"news_id": news.id, "news_title": news.title}},
                     )
                 return {"message": "News added", "success": True}
             return {"message": "News already exists", "success": False}
@@ -68,5 +70,14 @@ class AddComment(graphene.Mutation):
         text = kwargs.get("text")
         user = info.context.user
         Comments.objects.create(news=news, user=user, text=text)
-        CommentOnNewsSubscribe.comment_notify(str(news_id), user.username, text)
+        async_to_sync(channel_layer.group_send)(
+            str(news_id),
+            {
+                "data": {
+                    "news_id": news.id,
+                    "username": user.username,
+                    "comment_text": text,
+                }
+            },
+        )
         return {"message": "comment added", "success": True}

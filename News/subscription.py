@@ -1,61 +1,44 @@
 import channels_graphql_ws
 import graphene
+from channels.layers import get_channel_layer
+
+channel_layer = get_channel_layer()
 
 
-class BreakingNewsSubscription(channels_graphql_ws.Subscription):
-    """Срабатывает при появлении срочной новости"""
-
+class BreakingNewsType(graphene.ObjectType):
     news_id = graphene.Int()
     news_title = graphene.String()
 
-    def subscribe(self, info):
-        return None
 
-    def publish(self, info):
-
-        news_id = self["news_id"]
-        news_title = self["news_title"]
-
-        return BreakingNewsSubscription(
-            news_id=news_id,
-            news_title=news_title,
-        )
-
-    @classmethod
-    def deliver_news(cls, news_title, news_id):
-        cls.broadcast(
-            payload={"news_title": news_title, "news_id": news_id},
-        )
-
-
-class CommentOnNewsSubscribe(channels_graphql_ws.Subscription):
-    """Срабатывает при появлении комментария на новость, на которую подписан пользователь"""
-
+class CommentOnNewsType(graphene.ObjectType):
     username = graphene.String()
     comment_text = graphene.String()
     news_id = graphene.Int()
 
-    class Arguments:
 
-        news_id = graphene.Int()
+class NewsSubscription(graphene.ObjectType):
+    """Срабатывает при появлении срочной новости"""
 
-    def subscribe(self, info, news_id):
-        return [str(news_id)]
+    breaking_news = graphene.Field(BreakingNewsType)
+    comment_on_news = graphene.Field(CommentOnNewsType, news_id=graphene.Int())
 
-    def publish(self, info, news_id):
+    async def resolve_breaking_news(self, info, **kwargs):
+        channel_name = await channel_layer.new_channel()
+        await channel_layer.group_add("breaking_news", channel_name)
+        try:
+            while True:
+                message = await channel_layer.receive(channel_name)
+                yield message["data"]
+        finally:
+            await channel_layer.group_discard("breaking_news", channel_name)
 
-        username = self["username"]
-        comment_text = self["text"]
-
-        return CommentOnNewsSubscribe(
-            news_id=news_id,
-            comment_text=comment_text,
-            username=username,
-        )
-
-    @classmethod
-    def comment_notify(cls, news_id, username, text):
-        cls.broadcast(
-            group=news_id,
-            payload={"username": username, "text": text},
-        )
+    async def resolve_comment_on_news(self, info, **kwargs):
+        news_id = kwargs.get("news_id")
+        channel_name = await channel_layer.new_channel()
+        await channel_layer.group_add(str(news_id), channel_name)
+        try:
+            while True:
+                message = await channel_layer.receive(channel_name)
+                yield message["data"]
+        finally:
+            await channel_layer.group_discard("news_id", channel_name)
