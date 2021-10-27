@@ -27,9 +27,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-1e)fdgrah0th7c()x9b9l85ts4xq=p!!2v-bsd8!dv+8)sv898"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1"]
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -95,6 +95,7 @@ GRAPHENE = {
     "MIDDLEWARE": [
         "graphql_jwt.middleware.JSONWebTokenMiddleware",
     ],
+    "SUBSCRIPTION_PATH": "/subscriptions",
 }
 
 CHANNEL_LAYERS = {
@@ -106,7 +107,7 @@ CHANNEL_LAYERS = {
     },
 }
 
-ASGI_APPLICATION = "graphql_ws.django.routing.application"
+ASGI_APPLICATION = "main.asgi.auth_application"
 
 AUTHENTICATION_BACKENDS = [
     "graphql_jwt.backends.JSONWebTokenBackend",

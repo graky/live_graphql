@@ -1,14 +1,18 @@
 import graphene
+from graphene_django import DjangoObjectType
+from asgiref.sync import async_to_sync
+from django.core import serializers
 from channels.layers import get_channel_layer
+from News.models import News, Comments
 
-channel_layer = get_channel_layer()
+CHANNEL_LAYER = get_channel_layer()
 
 
-class BreakingNewsType(graphene.ObjectType):
+class BreakingNewsType(DjangoObjectType):
     """Уведомление о срочной новости"""
 
-    news_id = graphene.Int()
-    news_title = graphene.String()
+    class Meta:
+        model = News
 
 
 class CommentOnNewsType(graphene.ObjectType):
@@ -25,22 +29,23 @@ class NewsSubscription(graphene.ObjectType):
     comment_on_news = graphene.Field(CommentOnNewsType, news_id=graphene.Int())
 
     async def resolve_breaking_news(self, info, **kwargs):
-        channel_name = await channel_layer.new_channel()
-        await channel_layer.group_add("breaking_news", channel_name)
+        user = await info.context.get("user")
+        channel_name = await CHANNEL_LAYER.new_channel()
+        await CHANNEL_LAYER.group_add("breaking_news", channel_name)
         try:
-            while True:
-                message = await channel_layer.receive(channel_name)
-                yield message["data"]
+            while user.is_authenticated:
+                message = await CHANNEL_LAYER.receive(channel_name)
+                yield next(serializers.deserialize("json", message["data"])).object
         finally:
-            await channel_layer.group_discard("breaking_news", channel_name)
+            await CHANNEL_LAYER.group_discard("breaking_news", channel_name)
 
     async def resolve_comment_on_news(self, info, **kwargs):
         news_id = kwargs.get("news_id")
-        channel_name = await channel_layer.new_channel()
-        await channel_layer.group_add(str(news_id), channel_name)
+        channel_name = await CHANNEL_LAYER.new_channel()
+        await CHANNEL_LAYER.group_add(str(news_id), channel_name)
         try:
             while True:
-                message = await channel_layer.receive(channel_name)
+                message = await CHANNEL_LAYER.receive(channel_name)
                 yield message["data"]
         finally:
-            await channel_layer.group_discard("news_id", channel_name)
+            await CHANNEL_LAYER.group_discard("news_id", channel_name)

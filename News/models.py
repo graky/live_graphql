@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.utils.html import format_html
+from asgiref.sync import sync_to_async
 from ckeditor.fields import RichTextField
 from django.contrib.auth.models import User
 
@@ -26,19 +27,6 @@ class News(models.Model):
         ordering = ["-created_at"]
         verbose_name = "Новость"
         verbose_name_plural = "Новости"
-
-    def image_tag(self):
-        """тег для image"""
-        if self.image:
-            return format_html(
-                "<img src='/static/media/{}'\
-             width='400'/>".format(
-                    self.image
-                )
-            )
-
-    def __str__(self):
-        return self.title
 
 
 class Comments(models.Model):

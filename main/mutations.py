@@ -1,11 +1,11 @@
 import graphene
 import graphql_jwt
 from News.mutations import AddNews, AddComment
-from User.mutations import Register
+from User.mutations import Register, ObtainJSONWebToken
 
 
 class Mutation(graphene.ObjectType):
-    token_auth = graphql_jwt.ObtainJSONWebToken.Field()
+    token_auth = ObtainJSONWebToken.Field()
     verify_token = graphql_jwt.Verify.Field()
     refresh_token = graphql_jwt.Refresh.Field()
     add_news = AddNews.Field()

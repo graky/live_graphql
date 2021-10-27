@@ -4,11 +4,11 @@ from datetime import datetime
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from .models import News, Comments
-from django.conf import settings
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
+from django.core import serializers
 
-channel_layer = get_channel_layer()
+CHANNEL_LAYER = get_channel_layer()
 
 
 class AddNews(graphene.Mutation):
@@ -24,10 +24,7 @@ class AddNews(graphene.Mutation):
         image = Upload()
 
     def mutate(self, info, **kwargs):
-        if settings.DEBUG:
-            user_staff = True
-        else:
-            user_staff = info.context.user.is_staff
+        user_staff = info.context.user.is_staff
         if user_staff:
             title = kwargs.get("title")
             text = kwargs.get("text")
@@ -45,9 +42,9 @@ class AddNews(graphene.Mutation):
             )
             if created:
                 if news.breaking:
-                    async_to_sync(channel_layer.group_send)(
+                    async_to_sync(CHANNEL_LAYER.group_send)(
                         "breaking_news",
-                        {"data": {"news_id": news.id, "news_title": news.title}},
+                        {"data": serializers.serialize("json", [news])},
                     )
                 return {"message": "News added", "success": True}
             return {"message": "News already exists", "success": False}
@@ -70,7 +67,7 @@ class AddComment(graphene.Mutation):
         text = kwargs.get("text")
         user = info.context.user
         Comments.objects.create(news=news, user=user, text=text)
-        async_to_sync(channel_layer.group_send)(
+        async_to_sync(CHANNEL_LAYER.group_send)(
             str(news_id),
             {
                 "data": {
