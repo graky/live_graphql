@@ -30,8 +30,7 @@ class CommentOnNewsType(DjangoObjectType):
         return await database_sync_to_async(lambda: self.news)()
 
     async def resolve_username(self, info, **kwargs):
-        user = await info.context.get("user")
-        return user.username
+        return await database_sync_to_async(lambda: self.user.username)()
 
 
 class NewsSubscription(graphene.ObjectType):
