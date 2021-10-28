@@ -1,31 +1,42 @@
 import graphene
 from graphene_django import DjangoObjectType
-from asgiref.sync import async_to_sync
+from asgiref.sync import async_to_sync, sync_to_async
 from django.core import serializers
 from channels.layers import get_channel_layer
 from News.models import News, Comments
+from channels.db import database_sync_to_async
 
 CHANNEL_LAYER = get_channel_layer()
 
 
-class BreakingNewsType(DjangoObjectType):
+class SubscribeNewsType(DjangoObjectType):
     """Уведомление о срочной новости"""
 
     class Meta:
         model = News
 
 
-class CommentOnNewsType(graphene.ObjectType):
+class CommentOnNewsType(DjangoObjectType):
     """Обновление комментариев к конкретной новости в live режиме"""
 
+    class Meta:
+        model = Comments
+        fields = ["id", "text", "created_at"]
+
     username = graphene.String()
-    comment_text = graphene.String()
-    news_id = graphene.Int()
+    news = graphene.Field(SubscribeNewsType)
+
+    async def resolve_news(self, info, **kwargs):
+        return await database_sync_to_async(lambda: self.news)()
+
+    async def resolve_username(self, info, **kwargs):
+        user = await info.context.get("user")
+        return user.username
 
 
 class NewsSubscription(graphene.ObjectType):
 
-    breaking_news = graphene.Field(BreakingNewsType)
+    breaking_news = graphene.Field(SubscribeNewsType)
     comment_on_news = graphene.Field(CommentOnNewsType, news_id=graphene.Int())
 
     async def resolve_breaking_news(self, info, **kwargs):
@@ -35,7 +46,8 @@ class NewsSubscription(graphene.ObjectType):
         try:
             while user.is_authenticated:
                 message = await CHANNEL_LAYER.receive(channel_name)
-                yield next(serializers.deserialize("json", message["data"])).object
+                news_id = message["news_id"]
+                yield sync_to_async(News.objects.get)(pk=news_id)
         finally:
             await CHANNEL_LAYER.group_discard("breaking_news", channel_name)
 
@@ -46,6 +58,7 @@ class NewsSubscription(graphene.ObjectType):
         try:
             while True:
                 message = await CHANNEL_LAYER.receive(channel_name)
-                yield message["data"]
+                comment_id = message["comment_id"]
+                yield sync_to_async(Comments.objects.get)(pk=comment_id)
         finally:
             await CHANNEL_LAYER.group_discard("news_id", channel_name)

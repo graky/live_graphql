@@ -44,7 +44,8 @@ class AddNews(graphene.Mutation):
                 if news.breaking:
                     async_to_sync(CHANNEL_LAYER.group_send)(
                         "breaking_news",
-                        {"data": serializers.serialize("json", [news])},
+                        # {"data": serializers.serialize("json", [news])},
+                        {"news_id": news.id},
                     )
                 return {"message": "News added", "success": True}
             return {"message": "News already exists", "success": False}
@@ -66,15 +67,9 @@ class AddComment(graphene.Mutation):
         news = News.objects.get(pk=news_id)
         text = kwargs.get("text")
         user = info.context.user
-        Comments.objects.create(news=news, user=user, text=text)
+        comment = Comments.objects.create(news=news, user=user, text=text)
         async_to_sync(CHANNEL_LAYER.group_send)(
             str(news_id),
-            {
-                "data": {
-                    "news_id": news.id,
-                    "username": user.username,
-                    "comment_text": text,
-                }
-            },
+            {"comment_id": comment.id},
         )
         return {"message": "comment added", "success": True}
